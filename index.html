@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חפש את האפיקומן 🫓</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #b45309; --cream: #fdf6ec; --cream2: #f5ede0;
+  --brown: #2d1a0e; --brown2: #6b4226; --purple: #7c3aed; --purple2: #6d28d9;
+  --green: #15803d; --border: #e0ccb0; --shadow: rgba(45,26,14,0.13);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Heebo', sans-serif; background: var(--cream); min-height: 100vh; color: var(--brown); }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 10% 20%, rgba(180,83,9,0.07) 0%, transparent 60%),
+              radial-gradient(ellipse at 90% 80%, rgba(124,58,237,0.06) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+.screen { display: none; position: relative; z-index: 1; }
+.screen.active { display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+#screen-home { justify-content: center; padding: 24px 20px 36px; gap: 20px; }
+.home-header { text-align: center; }
+.home-title { font-size: 1.9rem; font-weight: 900; color: var(--gold); letter-spacing: -1px; }
+.home-sub { font-size: 0.95rem; color: var(--brown2); font-weight: 700; margin-top: 4px; }
+.home-card { width: 100%; max-width: 360px; background: #fff; border: 2px solid var(--border); border-radius: 20px; padding: 20px 22px; box-shadow: 0 6px 28px var(--shadow); display: flex; flex-direction: column; gap: 14px; }
+.card-label { font-size: 0.82rem; font-weight: 700; color: var(--gold); text-align: center; }
+.code-input { font-family: 'Heebo', sans-serif; font-size: 1.8rem; font-weight: 900; width: 100%; height: 62px; border: 2.5px solid var(--border); border-radius: 12px; padding: 0 16px; outline: none; text-align: center; background: var(--cream); color: var(--brown); letter-spacing: 5px; transition: border-color 0.15s, box-shadow 0.15s; direction: ltr; }
+.code-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+.code-input.wrong { border-color: #dc2626; background: #fef2f2; animation: shake 0.3s ease; }
+.code-feedback { font-size: 0.88rem; font-weight: 700; min-height: 18px; text-align: center; color: #dc2626; }
+.btn-enter { font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 1.05rem; padding: 13px; border-radius: 12px; border: none; background: var(--purple); color: #fff; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+.btn-enter:hover { background: var(--purple2); transform: translateY(-2px); }
+.progress-section { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 8px; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 700; color: var(--brown2); }
+.progress-bar-bg { background: #e8d8c0; border-radius: 99px; height: 12px; overflow: hidden; border: 1.5px solid #d4b896; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #f59e0b); border-radius: 99px; transition: width 0.7s cubic-bezier(.4,0,.2,1); }
+.progress-stations { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.station-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900; color: #b39070; transition: background 0.3s, border-color 0.3s; }
+.station-dot.done { background: var(--green); border-color: var(--green); color: #fff; }
+.btn-reset-all { font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.8rem; padding: 7px 18px; border-radius: 99px; border: 2px solid var(--border); background: transparent; color: #b39070; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.btn-reset-all:hover { background: var(--cream2); color: var(--brown2); }
+#success-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(15,10,5,0.55); align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+#success-overlay.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.success-card { background: #fff; border: 3px solid #86efac; border-radius: 24px; padding: 40px 32px; max-width: 340px; width: 90%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: popUp 0.35s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes popUp { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-emoji { font-size: 3.5rem; }
+.success-title { font-size: 1.7rem; font-weight: 900; color: var(--green); }
+.success-sub { font-size: 0.95rem; color: var(--brown2); line-height: 1.5; }
+#win-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(15,10,5,0.7); align-items: center; justify-content: center; }
+#win-overlay.show { display: flex; }
+.win-card { background: #fff; border: 3px solid var(--gold); border-radius: 28px; padding: 48px 36px; max-width: 360px; width: 90%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; animation: popUp 0.4s cubic-bezier(.175,.885,.32,1.275); }
+.win-emoji { font-size: 4rem; }
+.win-title { font-size: 2rem; font-weight: 900; color: var(--gold); }
+.win-text { font-size: 1rem; color: var(--brown2); line-height: 1.6; }
+.btn-win { font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 1rem; padding: 12px 28px; border-radius: 12px; border: none; background: var(--gold); color: #fff; cursor: pointer; }
+.btn-win:hover { background: #92400e; }
+#screen-puzzle { padding: 0; gap: 0; }
+.puzzle-topbar { width: 100%; background: #fff; border-bottom: 2px solid var(--border); padding: 6px 10px; display: flex; align-items: center; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px var(--shadow); flex-shrink: 0; }
+.topbar-label { font-size: 0.78rem; font-weight: 900; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+.btn-back { font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.78rem; padding: 5px 10px; border-radius: 8px; border: 2px solid var(--border); background: transparent; color: var(--brown2); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.btn-back:hover { background: var(--cream2); }
+#puzzle-iframe { width: 100%; border: none; min-height: calc(100vh - 46px); flex: 1; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+</style>
+</head>
+<body>
+
+<div id="screen-home" class="screen active">
+  <div class="home-header">
+    <div class="home-title">🫓 האפיקומן</div>
+    <div class="home-sub">הכניסו את קוד התחנה שמצאתם</div>
+  </div>
+  <div class="home-card">
+    <div class="card-label">קוד תחנה</div>
+    <input type="text" class="code-input" id="code-input"
+      placeholder="- - - - - -" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="8"/>
+    <div class="code-feedback" id="code-feedback"></div>
+    <button class="btn-enter" onclick="checkCode()">כניסה ◀</button>
+  </div>
+  <div class="progress-section">
+    <div class="progress-header">
+      <span>התקדמות</span>
+      <span id="progress-count">0 / 10</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-stations" id="progress-stations"></div>
+  </div>
+  <button class="btn-reset-all" onclick="resetAll()">↺ איפוס התקדמות</button>
+</div>
+
+<div id="screen-puzzle" class="screen">
+  <div class="puzzle-topbar">
+    <button class="btn-back" onclick="goHome()">← חזרה</button>
+    <div class="topbar-label" id="topbar-label"></div>
+    <div style="width:50px"></div>
+  </div>
+  <iframe id="puzzle-iframe" title="חידה"></iframe>
+</div>
+
+<div id="success-overlay">
+  <div class="success-card">
+    <div class="success-emoji">🎉</div>
+    <div class="success-title">כל הכבוד!</div>
+    <div class="success-sub">התחנה הושלמה!</div>
+  </div>
+</div>
+
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">🏆</div>
+    <div class="win-title">מצאתם את האפיקומן!</div>
+    <div class="win-text">🎉 כל הכבוד! כל התחנות הושלמו!<br><br>חג פסח שמח! 🌿</div>
+    <button class="btn-win" onclick="document.getElementById('win-overlay').classList.remove('show')">🫓 סיום</button>
+  </div>
+</div>
+
+<script>
+const STATIONS = [
+  { id:1,  name:'תחנה 1',  icon:'🖼️', code:'1357' },
+  { id:2,  name:'תחנה 2',  icon:'🔤', code:'2489' },
+  { id:3,  name:'תחנה 3',  icon:'🖼️', code:'9876' },
+  { id:4,  name:'תחנה 4',  icon:'🫓', code:'1982' },
+  { id:5,  name:'תחנה 5',  icon:'🔗', code:'2026' },
+  { id:6,  name:'תחנה 6',  icon:'🖼️', code:'1493' },
+  { id:7,  name:'תחנה 7',  icon:'📝', code:'1234' },
+  { id:8,  name:'תחנה 8',  icon:'👦', code:'4334' },
+  { id:9,  name:'תחנה 9',  icon:'🖼️', code:'2222' },
+  { id:10, name:'תחנה 10', icon:'🔺', code:'1470' },
+];
+
+const STORAGE_KEY = 'afikoman_adults_v1';
+let state = { completed: [] };
+let currentStation = null;
+
+function loadState() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) state = JSON.parse(r); } catch(e) {} }
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function isCompleted(id) { return state.completed.includes(id); }
+function markCompleted(id) { if (!isCompleted(id)) { state.completed.push(id); saveState(); } }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  showScreen('home');
+  renderProgress();
+  const inp = document.getElementById('code-input');
+  inp.value = ''; inp.className = 'code-input';
+  document.getElementById('code-feedback').textContent = '';
+  setTimeout(() => inp.focus(), 150);
+}
+
+document.getElementById('code-input').addEventListener('keydown', e => { if (e.key === 'Enter') checkCode(); });
+document.getElementById('code-input').addEventListener('input', () => {
+  document.getElementById('code-input').className = 'code-input';
+  document.getElementById('code-feedback').textContent = '';
+});
+
+function checkCode() {
+  const inp = document.getElementById('code-input');
+  const val = inp.value.trim();
+  const fb = document.getElementById('code-feedback');
+  if (!val) { fb.textContent = 'הכניסו קוד'; return; }
+  const st = STATIONS.find(s => s.code === val);
+  if (!st) {
+    inp.className = 'code-input wrong';
+    setTimeout(() => inp.className = 'code-input', 320);
+    fb.textContent = 'קוד לא נכון — נסו שוב 🔍';
+    inp.value = '';
+    setTimeout(() => inp.focus(), 100);
+    return;
+  }
+  currentStation = st;
+  launchPuzzle();
+}
+
+function launchPuzzle() {
+  document.getElementById('topbar-label').textContent = `${currentStation.icon} תחנה ${currentStation.id}`;
+  const iframe = document.getElementById('puzzle-iframe');
+  iframe.srcdoc = buildStationHtml(currentStation.id);
+  showScreen('puzzle');
+}
+
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'STATION_COMPLETE') handleCompletion();
+});
+
+function handleCompletion() {
+  markCompleted(currentStation.id);
+  renderProgress();
+  document.getElementById('success-overlay').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('success-overlay').classList.remove('show');
+    goHome();
+    if (state.completed.length === STATIONS.length) {
+      setTimeout(() => document.getElementById('win-overlay').classList.add('show'), 400);
+    }
+  }, 2200);
+}
+
+function renderProgress() {
+  const n = state.completed.length;
+  document.getElementById('progress-fill').style.width = Math.round(n / STATIONS.length * 100) + '%';
+  document.getElementById('progress-count').textContent = n + ' / ' + STATIONS.length;
+  const container = document.getElementById('progress-stations');
+  container.innerHTML = '';
+  STATIONS.forEach(st => {
+    const dot = document.createElement('div');
+    dot.className = 'station-dot' + (isCompleted(st.id) ? ' done' : '');
+    dot.textContent = isCompleted(st.id) ? '✓' : st.id;
+    container.appendChild(dot);
+  });
+}
+
+function resetAll() {
+  if (!confirm('למחוק את כל ההתקדמות?')) return;
+  state = { completed: [] };
+  saveState();
+  renderProgress();
+}
+
+loadState();
+renderProgress();
+setTimeout(() => document.getElementById('code-input').focus(), 200);
+
+function buildStationHtml(id) {
+  if (id===1) return s1();
+  if (id===2) return s2();
+  if (id===3) return s3();
+  if (id===4) return s4();
+  if (id===5) return s5();
+  if (id===6) return s6();
+  if (id===7) return s7();
+  if (id===8) return s8();
+  if (id===9) return s9();
+  if (id===10) return s10();
+  return '<p>תחנה לא נמצאה</p>';
+}
+
+function s1() { return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Heebo',sans-serif;background:#fdf6ec;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;gap:20px}#image-wrap{width:100%;max-width:480px;border-radius:18px;overflow:hidden;border:3px solid #e0d8cc;box-shadow:0 6px 28px rgba(0,0,0,.12)}#image-wrap img{width:100%;height:auto;display:block}#answer-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:340px}#answer-input{font-family:'Heebo',sans-serif;font-size:1.3rem;font-weight:700;width:100%;height:58px;border:2.5px solid #d4b896;border-radius:14px;padding:0 18px;outline:none;text-align:center;background:#fff;color:#2d1a0e;transition:border-color .15s}#answer-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}#answer-input.correct{border-color:#16a34a;background:#f0fdf4;color:#15803d}#answer-input.wrong{border-color:#dc2626;background:#fef2f2;animation:shake .28s ease}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}#btn-check{font-family:'Heebo',sans-serif;font-weight:700;font-size:1.05rem;padding:13px 36px;border-radius:12px;border:none;background:#7c3aed;color:#fff;cursor:pointer;width:100%;transition:background .15s}#btn-check:hover{background:#6d28d9}#feedback{font-size:1rem;font-weight:700;min-height:24px;text-align:center;color:#78716c}#feedback.success{color:#16a34a}#feedback.error{color:#dc2626}#btn-reset{font-family:'Heebo',sans-serif;font-weight:700;font-size:.85rem;padding:8px 22px;border-radius:10px;border:2px solid #d4b896;background:#fff;color:#78716c;cursor:pointer}</style></head><body><div id="image-wrap"><img src="pic1.jpg" alt="חידה"></div><div id="answer-wrap"><input type="text" id="answer-input" placeholder="כתבו את התשובה" autocomplete="off" autocorrect="off" spellcheck="false"><button id="btn-check">בדיקה ✓</button><div id="feedback"></div><button id="btn-reset">↺ נסו שוב</button></div><script>const ANSWERS=['31'];const inp=document.getElementById('answer-input'),fb=document.getElementById('feedback');function normalize(s){return s.trim().replace(/\\s+/g,' ')}inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});inp.addEventListener('input',()=>{inp.classList.remove('correct','wrong');fb.textContent='';fb.className=''});function check(){const val=normalize(inp.value);if(!val){fb.textContent='כתבו תשובה';fb.className='error';return}if(ANSWERS.some(a=>normalize(a)===val)){inp.classList.add('correct');fb.textContent='🎉 נכון! כל הכבוד!';fb.className='success';setTimeout(()=>{parent.postMessage({type:'STATION_COMPLETE'},'*')},900)}else{inp.classList.add('wrong');setTimeout(()=>inp.classList.remove('wrong'),320);fb.textContent='לא מדויק — נסו שוב';fb.className='error';inp.value='';inp.focus()}}document.getElementById('btn-check').addEventListener('click',check);document.getElementById('btn-reset').addEventListener('click',()=>{inp.value='';inp.classList.remove('correct','wrong');fb.textContent='';fb.className='';inp.focus()});inp.focus();<\\/script></body></html>`; }
+function s2() { return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>וורדל עברי</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf6ec;
+  --card: #fff;
+  --border: #e0ccb0;
+  --gold: #b45309;
+  --text: #2d1a0e;
+  --sub: #78716c;
+  --shadow: rgba(45,26,14,0.10);
+  --green: #6aab6e;
+  --yellow: #c9a83a;
+  --gray: #b0a090;
+  --empty: #fff;
+  --cell-size: 58px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 40px;
+  gap: 16px;
+  color: var(--text);
+}
+
+h1 { font-size: 1.5rem; font-weight: 900; color: var(--gold); text-align: center; }
+.subtitle { font-size: 0.85rem; color: var(--sub); text-align: center; line-height: 1.6; }
+
+/* ── BOARD ── */
+#board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  direction: rtl;
+}
+
+.cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border: 2.5px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 900;
+  background: var(--empty);
+  color: var(--text);
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+  position: relative;
+}
+
+.cell.filled {
+  border-color: #8a7060;
+  animation: pop 0.1s ease;
+}
+
+.cell.green  { background: var(--green);  border-color: var(--green);  color: #fff; }
+.cell.yellow { background: var(--yellow); border-color: var(--yellow); color: #fff; }
+.cell.gray   { background: var(--gray);   border-color: var(--gray);   color: #fff; }
+
+.cell.flip {
+  animation: flip 0.5s ease forwards;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes flip {
+  0%   { transform: rotateX(0deg); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-6px); }
+  40%     { transform: translateX(6px); }
+  60%     { transform: translateX(-4px); }
+  80%     { transform: translateX(4px); }
+}
+
+.row.shake { animation: shake 0.4s ease; }
+
+/* ── HIDDEN INPUT ── */
+#hidden-input {
+  position: fixed;
+  opacity: 0;
+  top: 0; left: 0;
+  width: 1px; height: 1px;
+  pointer-events: none;
+}
+
+/* ── TAP AREA ── */
+#tap-area {
+  width: 100%;
+  max-width: 360px;
+  padding: 14px;
+  background: var(--card);
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sub);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+#tap-area:active { background: #f5ede0; border-color: var(--gold); }
+#tap-area.focused { background: #fff9f0; border-color: var(--gold); color: var(--gold); }
+
+/* ── FEEDBACK ── */
+#feedback {
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-height: 24px;
+  text-align: center;
+  color: var(--sub);
+}
+#feedback.error   { color: #dc2626; }
+#feedback.success { color: #15803d; }
+#feedback.info    { color: var(--gold); }
+
+/* ── CONTROLS ── */
+.controls { display: flex; gap: 10px; justify-content: center; }
+button {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.9rem;
+  padding: 10px 24px; border-radius: 99px; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+#btn-enter {
+  background: #2d1a0e; color: #fff;
+}
+#btn-enter:disabled { background: #c4b49a; cursor: default; }
+#btn-enter:not(:disabled):hover { background: #4a2f1a; }
+#btn-del {
+  background: var(--card); color: var(--text);
+  border: 2px solid var(--border);
+}
+#btn-del:hover { background: var(--bg); }
+#btn-reset {
+  background: var(--card); color: var(--sub);
+  border: 2px solid var(--border);
+}
+#btn-reset:hover { background: var(--bg); }
+
+/* ── WIN/LOSE OVERLAY ── */
+#end-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,10,5,0.6); align-items: center; justify-content: center;
+}
+#end-overlay.show { display: flex; }
+.end-card {
+  background: var(--card); border-radius: 24px;
+  padding: 40px 32px; max-width: 320px; width: 90%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  animation: popUp 0.35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popUp { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+.end-emoji { font-size: 3rem; }
+.end-title { font-size: 1.6rem; font-weight: 900; }
+.end-sub   { font-size: 0.92rem; color: var(--sub); line-height: 1.5; }
+.btn-end {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.95rem;
+  padding: 10px 28px; border-radius: 99px; border: none; cursor: pointer;
+  color: #fff;
+}
+
+@media (max-width: 360px) {
+  :root { --cell-size: 50px; }
+}
+</style>
+</head>
+<body>
+
+<h1>🫓 וורדל פסח</h1>
+<div class="subtitle">נחשו את המילה בת 5 האותיות — 6 ניסיונות</div>
+
+<div id="board"></div>
+
+<div id="tap-area" onclick="focusInput()">⌨️ לחצו כאן להקלדה</div>
+
+<input id="hidden-input" type="text" autocomplete="off" autocorrect="off"
+       autocapitalize="off" spellcheck="false" inputmode="text" maxlength="1">
+
+<div id="feedback"></div>
+
+<div class="controls">
+  <button id="btn-del">⌫ מחיקה</button>
+  <button id="btn-enter" disabled>אישור ↵</button>
+  <button id="btn-reset">↺ שוב</button>
+</div>
+
+<div id="end-overlay">
+  <div class="end-card" id="end-card">
+    <div class="end-emoji" id="end-emoji"></div>
+    <div class="end-title" id="end-title"></div>
+    <div class="end-sub" id="end-sub"></div>
+    <button class="btn-end" id="btn-end" onclick="reset()">שחקו שוב ↺</button>
+  </div>
+</div>
+
+<script>
+const WORD = 'חרוסת';
+const WORD_LEN = 5;
+const MAX_ROWS = 6;
+
+const REG_MAP = {'ן':'נ','ך':'כ','ם':'מ','ף':'פ','ץ':'צ'};
+function norm(ch) { return REG_MAP[ch] || ch; }
+
+let currentRow = 0;
+let currentGuess = [];
+let gameOver = false;
+let rows = [];
+
+// Build board
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  rows = [];
+  for (let r = 0; r < MAX_ROWS; r++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const cells = [];
+    for (let c = 0; c < WORD_LEN; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      row.appendChild(cell);
+      cells.push(cell);
+    }
+    board.appendChild(row);
+    rows.push({ el: row, cells });
+  }
+}
+
+function getCells() { return rows[currentRow]?.cells || []; }
+
+function renderCurrentGuess() {
+  const cells = getCells();
+  // In RTL: cell[0] is rightmost on screen = first letter
+  cells.forEach((cell, i) => {
+    const ch = currentGuess[i] || '';
+    cell.textContent = ch;
+    cell.classList.toggle('filled', !!ch);
+  });
+  document.getElementById('btn-enter').disabled = currentGuess.length !== WORD_LEN;
+}
+
+function addLetter(ch) {
+  if (gameOver || currentGuess.length >= WORD_LEN) return;
+  // Only Hebrew letters
+  if (!/[\\u05d0-\\u05ea]/.test(ch)) return;
+  currentGuess.push(ch);
+  renderCurrentGuess();
+  clearFeedback();
+}
+
+function deleteLetter() {
+  if (gameOver || currentGuess.length === 0) return;
+  currentGuess.pop();
+  renderCurrentGuess();
+  clearFeedback();
+}
+
+function submitGuess() {
+  if (gameOver || currentGuess.length !== WORD_LEN) return;
+
+  const guess = currentGuess.join('');
+  const result = scoreGuess(guess);
+  const cells = getCells();
+
+  // Animate flip and color
+  result.forEach((state, i) => {
+    setTimeout(() => {
+      cells[i].classList.add('flip');
+      setTimeout(() => {
+        cells[i].classList.add(state);
+        cells[i].classList.remove('flip');
+      }, 250);
+    }, i * 120);
+  });
+
+  const delay = WORD_LEN * 120 + 300;
+
+  setTimeout(() => {
+    const normGuess = [...guess].map(norm).join('');
+    const normWord  = [...WORD].map(norm).join('');
+
+    if (normGuess === normWord) {
+      gameOver = true;
+      setTimeout(() => { showEnd(true, currentRow + 1); setTimeout(()=>parent.postMessage({type:'STATION_COMPLETE'},'*'),1800); }, 300);
+    } else {
+      currentRow++;
+      currentGuess = [];
+      renderCurrentGuess();
+      if (currentRow >= MAX_ROWS) {
+        gameOver = true;
+        setTimeout(() => showEnd(false, 0), 300);
+      }
+    }
+  }, delay);
+}
+
+function scoreGuess(guess) {
+  const result = Array(WORD_LEN).fill('gray');
+  const wordArr  = [...WORD].map(norm);
+  const guessArr = [...guess].map(norm);
+  const used = Array(WORD_LEN).fill(false);
+
+  // Green pass
+  guessArr.forEach((ch, i) => {
+    if (ch === wordArr[i]) { result[i] = 'green'; used[i] = true; }
+  });
+
+  // Yellow pass
+  guessArr.forEach((ch, i) => {
+    if (result[i] === 'green') return;
+    const j = wordArr.findIndex((wch, wi) => !used[wi] && wch === ch);
+    if (j !== -1) { result[i] = 'yellow'; used[j] = true; }
+  });
+
+  return result;
+}
+
+function showEnd(won, attempts) {
+  const overlay = document.getElementById('end-overlay');
+  document.getElementById('end-emoji').textContent = won ? '🎉' : '😔';
+  document.getElementById('end-title').textContent = won ? 'כל הכבוד!' : 'אוי...';
+  document.getElementById('end-sub').textContent = won
+    ? \`פתרתם ב-\${attempts} מתוך \${MAX_ROWS} ניסיונות!\\nהמילה: \${WORD}\`
+    : \`נגמרו הניסיונות. המילה הייתה: \${WORD}\`;
+  document.getElementById('btn-end').style.background = won ? '#15803d' : '#b45309';
+  overlay.classList.add('show');
+}
+
+function setFeedback(msg, cls) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.className = cls || '';
+}
+function clearFeedback() { setFeedback(''); }
+
+// Input handling
+const hiddenInput = document.getElementById('hidden-input');
+
+function focusInput() {
+  hiddenInput.value = '';
+  hiddenInput.focus();
+  document.getElementById('tap-area').classList.add('focused');
+}
+
+hiddenInput.addEventListener('blur', () => {
+  document.getElementById('tap-area').classList.remove('focused');
+});
+
+hiddenInput.addEventListener('input', e => {
+  const val = hiddenInput.value;
+  hiddenInput.value = '';
+  if (!val) return;
+  const ch = val[val.length - 1];
+  addLetter(ch);
+});
+
+// Also handle physical keyboard
+document.addEventListener('keydown', e => {
+  if (gameOver) return;
+  if (e.key === 'Enter') { submitGuess(); return; }
+  if (e.key === 'Backspace') { deleteLetter(); return; }
+  if (e.key.length === 1) addLetter(e.key);
+});
+
+document.getElementById('btn-enter').addEventListener('click', submitGuess);
+document.getElementById('btn-del').addEventListener('click', deleteLetter);
+document.getElementById('btn-reset').addEventListener('click', reset);
+
+function reset() {
+  currentRow = 0;
+  currentGuess = [];
+  gameOver = false;
+  document.getElementById('end-overlay').classList.remove('show');
+  clearFeedback();
+  buildBoard();
+  renderCurrentGuess();
+}
+
+buildBoard();
+renderCurrentGuess();
+<\/script>
+</body>
+</html>
+`; }
+function s3() { return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Heebo',sans-serif;background:#fdf6ec;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;gap:20px}#image-wrap{width:100%;max-width:480px;border-radius:18px;overflow:hidden;border:3px solid #e0d8cc;box-shadow:0 6px 28px rgba(0,0,0,.12)}#image-wrap img{width:100%;height:auto;display:block}#answer-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:340px}#answer-input{font-family:'Heebo',sans-serif;font-size:1.3rem;font-weight:700;width:100%;height:58px;border:2.5px solid #d4b896;border-radius:14px;padding:0 18px;outline:none;text-align:center;background:#fff;color:#2d1a0e;transition:border-color .15s}#answer-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}#answer-input.correct{border-color:#16a34a;background:#f0fdf4;color:#15803d}#answer-input.wrong{border-color:#dc2626;background:#fef2f2;animation:shake .28s ease}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}#btn-check{font-family:'Heebo',sans-serif;font-weight:700;font-size:1.05rem;padding:13px 36px;border-radius:12px;border:none;background:#7c3aed;color:#fff;cursor:pointer;width:100%;transition:background .15s}#btn-check:hover{background:#6d28d9}#feedback{font-size:1rem;font-weight:700;min-height:24px;text-align:center;color:#78716c}#feedback.success{color:#16a34a}#feedback.error{color:#dc2626}#btn-reset{font-family:'Heebo',sans-serif;font-weight:700;font-size:.85rem;padding:8px 22px;border-radius:10px;border:2px solid #d4b896;background:#fff;color:#78716c;cursor:pointer}</style></head><body><div id="image-wrap"><img src="pic2.jpg" alt="חידה"></div><div id="answer-wrap"><input type="text" id="answer-input" placeholder="כתבו את התשובה" autocomplete="off" autocorrect="off" spellcheck="false"><button id="btn-check">בדיקה ✓</button><div id="feedback"></div><button id="btn-reset">↺ נסו שוב</button></div><script>const ANSWERS=['ציפי שביט','ציפי'];const inp=document.getElementById('answer-input'),fb=document.getElementById('feedback');function normalize(s){return s.trim().replace(/\\s+/g,' ')}inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});inp.addEventListener('input',()=>{inp.classList.remove('correct','wrong');fb.textContent='';fb.className=''});function check(){const val=normalize(inp.value);if(!val){fb.textContent='כתבו תשובה';fb.className='error';return}if(ANSWERS.some(a=>normalize(a)===val)){inp.classList.add('correct');fb.textContent='🎉 נכון! כל הכבוד!';fb.className='success';setTimeout(()=>{parent.postMessage({type:'STATION_COMPLETE'},'*')},900)}else{inp.classList.add('wrong');setTimeout(()=>inp.classList.remove('wrong'),320);fb.textContent='לא מדויק — נסו שוב';fb.className='error';inp.value='';inp.focus()}}document.getElementById('btn-check').addEventListener('click',check);document.getElementById('btn-reset').addEventListener('click',()=>{inp.value='';inp.classList.remove('correct','wrong');fb.textContent='';fb.className='';inp.focus()});inp.focus();<\\/script></body></html>`; }
+function s4() { return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Heebo',sans-serif;background:#fdf6ec;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:14px 14px 28px;gap:12px}h1{font-size:1.4rem;font-weight:900;color:#92400e;text-align:center}#letters-display{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.letter-tile{width:50px;height:50px;background:#7c3aed;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;box-shadow:0 3px 8px rgba(124,58,237,.3)}#instruction{font-size:.95rem;color:#78716c;text-align:center;line-height:1.6;max-width:380px}#instruction strong{color:#92400e}#input-area{display:flex;gap:10px;align-items:center;justify-content:center}#word-input{font-family:'Heebo',sans-serif;font-size:1.25rem;font-weight:700;width:190px;height:50px;border:2.5px solid #d4b896;border-radius:12px;padding:0 14px;outline:none;text-align:center;background:#fff;color:#2d1a0e;transition:border-color .15s}#word-input:focus{border-color:#7c3aed}#word-input.shake{animation:shake .3s ease;border-color:#dc2626}#btn-submit{font-family:'Heebo',sans-serif;font-weight:700;font-size:.95rem;padding:0 22px;height:50px;border-radius:12px;border:none;background:#7c3aed;color:#fff;cursor:pointer}#btn-submit:hover{background:#6d28d9}#feedback{font-size:.95rem;font-weight:700;min-height:22px;text-align:center}#feedback.success{color:#16a34a}#feedback.error{color:#dc2626}#feedback.info{color:#92400e}#progress-bar-wrap{width:100%;max-width:380px;background:#e7ddd0;border-radius:99px;height:11px;overflow:hidden}#progress-bar{height:100%;background:#7c3aed;border-radius:99px;transition:width .4s ease;width:0%}#progress-label{font-size:.88rem;color:#78716c;font-weight:700;text-align:center}#found-section{width:100%;max-width:420px}#found-section h3{font-size:.9rem;font-weight:700;color:#92400e;margin-bottom:8px;text-align:center}#found-words{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;min-height:36px}.found-word{background:#fff;border:2px solid #7c3aed;color:#7c3aed;border-radius:99px;padding:3px 14px;font-size:.95rem;font-weight:700;animation:pop .25s ease}@keyframes pop{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}#btn-reset{font-family:'Heebo',sans-serif;font-weight:700;font-size:.85rem;padding:8px 22px;border-radius:10px;border:2px solid #d4b896;background:#fff;color:#78716c;cursor:pointer}</style></head><body><h1>🫓 משחק האפיקומן</h1><div id="letters-display"></div><div id="instruction">מצאו לפחות <strong>10 מילים</strong> מהאותיות של המילה <strong>אפיקומן</strong>.<br>כל אות — פעם אחת בלבד בכל מילה.</div><div id="input-area"><input type="text" id="word-input" placeholder="כתבו מילה..." autocomplete="off" autocorrect="off" spellcheck="false"/><button id="btn-submit">הוסף</button></div><div id="feedback"></div><div id="progress-bar-wrap"><div id="progress-bar"></div></div><div id="progress-label">נמצאו <span id="count">0</span> מילים — מטרה: 10</div><div id="found-section"><h3>המילים שמצאתם</h3><div id="found-words"></div></div><button id="btn-reset">↺ משחק חדש</button><script>const SOURCE='אפיקומן',MIN_WORDS=10,REG_MAP={'ן':'נ','ך':'כ','ם':'מ','ף':'פ','ץ':'צ'};function normalize(word){return word.split('').map(ch=>REG_MAP[ch]||ch).join('')}const DICTIONARY=new Set([]);const DICT_N=new Set([]);fetch('dictionary.json').then(r=>r.json()).then(words=>{words.forEach(w=>{DICTIONARY.add(w);DICT_N.add(normalize(w))});}).catch(()=>{'מי,מן,פי,קן,אמן,אפיק,קמין,אפיון,קומין,מין'.split(',').forEach(w=>{DICTIONARY.add(w);DICT_N.add(normalize(w))});});function getAvail(word){const src=[...SOURCE];for(const ch of word){const n=REG_MAP[ch]||ch;const idx=src.findIndex(s=>(REG_MAP[s]||s)===n);if(idx===-1)return false;src.splice(idx,1)}return true}let foundWords=new Set;function renderLetters(){const el=document.getElementById('letters-display');SOURCE.split('').forEach(l=>{const t=document.createElement('div');t.className='letter-tile';t.textContent=l;el.appendChild(t)})}function setFb(msg,type){const fb=document.getElementById('feedback');fb.textContent=msg;fb.className=type}function updateProgress(){const n=foundWords.size;document.getElementById('count').textContent=n;document.getElementById('progress-bar').style.width=Math.min(100,Math.round(n/MIN_WORDS*100))+'%';if(n>=MIN_WORDS){document.getElementById('progress-label').innerHTML='<span style="color:#16a34a">🎉 הגעתם ל-10! כל הכבוד!</span>';setTimeout(()=>{parent.postMessage({type:'STATION_COMPLETE'},'*')},600)}}function trySubmit(){const input=document.getElementById('word-input');const raw=input.value.trim();if(!raw)return;const norm=normalize(raw);if(foundWords.has(norm)){setFb('המילה כבר נמצאה! 😄','info');input.classList.add('shake');setTimeout(()=>input.classList.remove('shake'),320);input.value='';return}if(!getAvail(raw)){setFb('האותיות לא מופיעות באפיקומן 🤔','error');input.classList.add('shake');setTimeout(()=>input.classList.remove('shake'),320);input.value='';return}if(raw.length<2){setFb('מינימום 2 אותיות','error');input.value='';return}if(!DICT_N.has(norm)){setFb('"'+raw+'" לא במילון','error');input.classList.add('shake');setTimeout(()=>input.classList.remove('shake'),320);input.value='';return}foundWords.add(norm);const chip=document.createElement('div');chip.className='found-word';chip.textContent=raw;document.getElementById('found-words').appendChild(chip);updateProgress();setFb('כן! "'+raw+'" 🌟','success');input.value=''}document.getElementById('btn-submit').addEventListener('click',trySubmit);document.getElementById('word-input').addEventListener('keydown',e=>{if(e.key==='Enter')trySubmit()});document.getElementById('btn-reset').addEventListener('click',()=>{foundWords.clear();document.getElementById('found-words').innerHTML='';document.getElementById('word-input').value='';setFb('','');document.getElementById('progress-bar').style.width='0%';document.getElementById('progress-label').innerHTML='נמצאו <span id="count">0</span> מילים — מטרה: 10';document.getElementById('word-input').focus()});renderLetters();document.getElementById('word-input').focus();<\\/script></body></html>`; }
+function s5() { return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connections — חיבורים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf6ec;
+  --card: #fff;
+  --border: #e0ccb0;
+  --gold: #b45309;
+  --text: #2d1a0e;
+  --sub: #78716c;
+  --shadow: rgba(45,26,14,0.12);
+  --c1: #4f86c6;
+  --c2: #6aab6e;
+  --c3: #c97c3a;
+  --c4: #9b6bbf;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+  gap: 18px;
+  color: var(--text);
+}
+
+h1 { font-size: 1.5rem; font-weight: 900; color: var(--gold); text-align: center; }
+.subtitle { font-size: 0.85rem; color: var(--sub); text-align: center; line-height: 1.6; max-width: 360px; }
+
+/* ── SOLVED ROWS ── */
+#solved-area { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.solved-row {
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  animation: popUp 0.4s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popUp { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+.solved-title { font-size: 0.82rem; font-weight: 900; color: #fff; opacity: 0.85; letter-spacing: 0.5px; }
+.solved-words { font-size: 1rem; font-weight: 700; color: #fff; text-align: center; }
+
+/* ── GRID ── */
+#grid {
+  width: 100%; max-width: 480px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.word-tile {
+  background: var(--card);
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 900;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+  text-align: center;
+  padding: 4px;
+}
+.word-tile:hover { border-color: var(--gold); transform: translateY(-2px); }
+.word-tile:active { transform: scale(0.95); }
+.word-tile.selected {
+  background: #2d1a0e;
+  border-color: #2d1a0e;
+  color: #fff;
+}
+.word-tile.shake { animation: shake 0.4s ease; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+
+/* ── CONTROLS ── */
+.controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+button {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.9rem;
+  padding: 10px 22px; border-radius: 99px; border: none; cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+#btn-submit {
+  background: #2d1a0e; color: #fff;
+}
+#btn-submit:disabled { background: #c4b49a; cursor: default; transform: none; }
+#btn-submit:not(:disabled):hover { background: #4a2f1a; transform: translateY(-1px); }
+#btn-deselect {
+  background: var(--card); color: var(--text);
+  border: 2px solid var(--border);
+}
+#btn-deselect:hover { background: var(--bg); }
+#btn-reset {
+  background: var(--card); color: var(--sub);
+  border: 2px solid var(--border);
+}
+#btn-reset:hover { background: var(--bg); }
+
+/* ── FEEDBACK ── */
+#feedback {
+  font-size: 0.95rem; font-weight: 700;
+  min-height: 24px; text-align: center;
+  color: var(--sub);
+}
+#feedback.error { color: #dc2626; }
+#feedback.close { color: #b45309; }
+
+/* ── MISTAKES ── */
+.mistakes-wrap { display: flex; gap: 6px; align-items: center; }
+.mistakes-label { font-size: 0.82rem; font-weight: 700; color: var(--sub); }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: #2d1a0e; }
+.dot.used { background: #d4c4ac; }
+
+/* ── WIN ── */
+#win-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,10,5,0.6); align-items: center; justify-content: center;
+}
+#win-overlay.show { display: flex; }
+.win-card {
+  background: var(--card); border: 3px solid var(--gold); border-radius: 24px;
+  padding: 40px 32px; max-width: 320px; width: 90%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  animation: popUp 0.35s cubic-bezier(.175,.885,.32,1.275);
+}
+.win-emoji { font-size: 3rem; }
+.win-title { font-size: 1.6rem; font-weight: 900; color: var(--gold); }
+.win-sub { font-size: 0.9rem; color: var(--sub); line-height: 1.5; }
+.btn-win {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.95rem;
+  padding: 10px 26px; border-radius: 99px; border: none;
+  background: var(--gold); color: #fff; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>🔗 חיבורים</h1>
+<div class="subtitle">מצאו את ארבע הקבוצות של ארבע מילים. לחצו על מילה לבחירה.</div>
+
+<div id="solved-area"></div>
+<div id="grid"></div>
+
+<div id="feedback"></div>
+
+<div class="mistakes-wrap">
+  <span class="mistakes-label">ניסיונות שנותרו:</span>
+  <div class="dot" id="d1"></div>
+  <div class="dot" id="d2"></div>
+  <div class="dot" id="d3"></div>
+  <div class="dot" id="d4"></div>
+</div>
+
+<div class="controls">
+  <button id="btn-deselect">ביטול בחירה</button>
+  <button id="btn-submit" disabled>שליחה</button>
+  <button id="btn-reset">↺ משחק חדש</button>
+</div>
+
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">כל הכבוד!</div>
+    <div class="win-sub" id="win-sub"></div>
+    <button class="btn-win" onclick="document.getElementById('win-overlay').classList.remove('show')">סיום ◀</button>
+  </div>
+</div>
+
+<script>
+const GROUPS = [
+  {
+    title: 'ימים',
+    words: ['אדום','סוף','מלח','כספי'],
+    color: '#4f86c6',
+  },
+  {
+    title: 'צבעים',
+    words: ['צהוב','כחול','סגול','ירוק'],
+    color: '#6aab6e',
+  },
+  {
+    title: 'משה',
+    words: ['דץ','פרץ','חיים','דיין'],
+    color: '#c97c3a',
+  },
+  {
+    title: 'אי הסכמה',
+    words: ['רבנו','התווכחנו','הסתכסכנו','התעמתנו'],
+    color: '#9b6bbf',
+  },
+];
+
+// Build flat shuffled list
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let allWords = shuffle(GROUPS.flatMap(g => g.words.map(w => ({ word: w, group: g }))));
+let selected = new Set();
+let mistakesLeft = 4;
+let solvedGroups = new Set();
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  allWords.forEach(({ word }) => {
+    const tile = document.createElement('div');
+    tile.className = 'word-tile';
+    tile.textContent = word;
+    tile.dataset.word = word;
+    tile.addEventListener('click', () => onTileClick(word, tile));
+    grid.appendChild(tile);
+  });
+  renderMistakes();
+}
+
+function onTileClick(word, tile) {
+  if (selected.has(word)) {
+    selected.delete(word);
+    tile.classList.remove('selected');
+  } else {
+    if (selected.size >= 4) return;
+    selected.add(word);
+    tile.classList.add('selected');
+  }
+  document.getElementById('btn-submit').disabled = selected.size !== 4;
+  clearFeedback();
+}
+
+function submit() {
+  if (selected.size !== 4) return;
+
+  const selectedWords = [...selected];
+  const group = GROUPS.find(g => {
+    const gSet = new Set(g.words);
+    return selectedWords.every(w => gSet.has(w));
+  });
+
+  if (group) {
+    // Correct!
+    solvedGroups.add(group.title);
+    showSolved(group);
+    allWords = allWords.filter(({ word }) => !group.words.includes(word));
+    selected.clear();
+    buildGrid();
+    clearFeedback();
+
+    if (solvedGroups.size === GROUPS.length) {
+      setTimeout(() => { showWin(); setTimeout(()=>parent.postMessage({type:'STATION_COMPLETE'},'*'),1500); }, 600);
+    }
+  } else {
+    // Wrong — check if one away
+    mistakesLeft--;
+    renderMistakes();
+
+    const oneAway = GROUPS.some(g => {
+      const gSet = new Set(g.words);
+      return selectedWords.filter(w => gSet.has(w)).length === 3;
+    });
+
+    if (oneAway) {
+      setFeedback('כמעט! פספסתם ב-1 🔍', 'close');
+    } else {
+      setFeedback('לא נכון — נסו שוב', 'error');
+    }
+
+    // Shake tiles
+    selectedWords.forEach(w => {
+      const tile = document.querySelector(\`.word-tile[data-word="\${w}"]\`);
+      if (tile) {
+        tile.classList.add('shake');
+        setTimeout(() => tile.classList.remove('shake'), 400);
+      }
+    });
+
+    if (mistakesLeft === 0) {
+      setTimeout(revealAll, 800);
+    }
+  }
+}
+
+function showSolved(group) {
+  const area = document.getElementById('solved-area');
+  const row = document.createElement('div');
+  row.className = 'solved-row';
+  row.style.background = group.color;
+  row.innerHTML = \`
+    <div class="solved-title">\${group.title}</div>
+    <div class="solved-words">\${group.words.join(' · ')}</div>
+  \`;
+  area.appendChild(row);
+}
+
+function revealAll() {
+  const remaining = GROUPS.filter(g => !solvedGroups.has(g.title));
+  remaining.forEach(g => {
+    solvedGroups.add(g.title);
+    showSolved(g);
+  });
+  allWords = [];
+  buildGrid();
+  setFeedback('נגמרו הניסיונות — הנה הפתרון', 'error');
+}
+
+function showWin() {
+  const sub = mistakesLeft === 4
+    ? 'פתרתם בלי שגיאות! מושלם!'
+    : \`פתרתם עם \${4 - mistakesLeft} טעויות.\`;
+  document.getElementById('win-sub').textContent = sub;
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+function renderMistakes() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(\`d\${i}\`);
+    dot.classList.toggle('used', i > mistakesLeft);
+  }
+}
+
+function setFeedback(msg, cls) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.className = cls || '';
+}
+
+function clearFeedback() {
+  setFeedback('');
+}
+
+function reset() {
+  allWords = shuffle(GROUPS.flatMap(g => g.words.map(w => ({ word: w, group: g }))));
+  selected.clear();
+  mistakesLeft = 4;
+  solvedGroups.clear();
+  document.getElementById('solved-area').innerHTML = '';
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('win-overlay').classList.remove('show');
+  clearFeedback();
+  buildGrid();
+}
+
+document.getElementById('btn-submit').addEventListener('click', submit);
+document.getElementById('btn-deselect').addEventListener('click', () => {
+  selected.clear();
+  document.querySelectorAll('.word-tile.selected').forEach(t => t.classList.remove('selected'));
+  document.getElementById('btn-submit').disabled = true;
+  clearFeedback();
+});
+document.getElementById('btn-reset').addEventListener('click', reset);
+
+buildGrid();
+<\/script>
+</body>
+</html>
+`; }
+function s6() { return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Heebo',sans-serif;background:#fdf6ec;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;gap:20px}#image-wrap{width:100%;max-width:480px;border-radius:18px;overflow:hidden;border:3px solid #e0d8cc;box-shadow:0 6px 28px rgba(0,0,0,.12)}#image-wrap img{width:100%;height:auto;display:block}#answer-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:340px}#answer-input{font-family:'Heebo',sans-serif;font-size:1.3rem;font-weight:700;width:100%;height:58px;border:2.5px solid #d4b896;border-radius:14px;padding:0 18px;outline:none;text-align:center;background:#fff;color:#2d1a0e;transition:border-color .15s}#answer-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}#answer-input.correct{border-color:#16a34a;background:#f0fdf4;color:#15803d}#answer-input.wrong{border-color:#dc2626;background:#fef2f2;animation:shake .28s ease}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}#btn-check{font-family:'Heebo',sans-serif;font-weight:700;font-size:1.05rem;padding:13px 36px;border-radius:12px;border:none;background:#7c3aed;color:#fff;cursor:pointer;width:100%;transition:background .15s}#btn-check:hover{background:#6d28d9}#feedback{font-size:1rem;font-weight:700;min-height:24px;text-align:center;color:#78716c}#feedback.success{color:#16a34a}#feedback.error{color:#dc2626}#btn-reset{font-family:'Heebo',sans-serif;font-weight:700;font-size:.85rem;padding:8px 22px;border-radius:10px;border:2px solid #d4b896;background:#fff;color:#78716c;cursor:pointer}</style></head><body><div id="image-wrap"><img src="pic3.jpg" alt="חידה"></div><div id="answer-wrap"><input type="text" id="answer-input" placeholder="כתבו את התשובה" autocomplete="off" autocorrect="off" spellcheck="false"><button id="btn-check">בדיקה ✓</button><div id="feedback"></div><button id="btn-reset">↺ נסו שוב</button></div><script>const ANSWERS=['קניידלך','קניידל'];const inp=document.getElementById('answer-input'),fb=document.getElementById('feedback');function normalize(s){return s.trim().replace(/\\s+/g,' ')}inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});inp.addEventListener('input',()=>{inp.classList.remove('correct','wrong');fb.textContent='';fb.className=''});function check(){const val=normalize(inp.value);if(!val){fb.textContent='כתבו תשובה';fb.className='error';return}if(ANSWERS.some(a=>normalize(a)===val)){inp.classList.add('correct');fb.textContent='🎉 נכון! כל הכבוד!';fb.className='success';setTimeout(()=>{parent.postMessage({type:'STATION_COMPLETE'},'*')},900)}else{inp.classList.add('wrong');setTimeout(()=>inp.classList.remove('wrong'),320);fb.textContent='לא מדויק — נסו שוב';fb.className='error';inp.value='';inp.focus()}}document.getElementById('btn-check').addEventListener('click',check);document.getElementById('btn-reset').addEventListener('click',()=>{inp.value='';inp.classList.remove('correct','wrong');fb.textContent='';fb.className='';inp.focus()});inp.focus();<\\/script></body></html>`; }
+function s7() { return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תשבץ המכות</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf6ec;
+  --card: #fff;
+  --border: #e0ccb0;
+  --gold: #b45309;
+  --green: #15803d;
+  --red: #dc2626;
+  --text: #2d1a0e;
+  --sub: #78716c;
+  --purple: #7c3aed;
+  --shadow: rgba(45,26,14,0.10);
+  --cs: 40px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 12px 40px;
+  gap: 16px;
+  color: var(--text);
+}
+h1 { font-size: 1.5rem; font-weight: 900; color: var(--gold); text-align: center; }
+.subtitle { font-size: 0.88rem; color: var(--sub); text-align: center; line-height: 1.6; }
+
+.grid-wrap {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 4px 20px var(--shadow);
+  overflow-x: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, var(--cs));
+  grid-template-rows: repeat(9, var(--cs));
+  gap: 2px;
+  direction: ltr;
+}
+
+.cell { width: var(--cs); height: var(--cs); position: relative; }
+.cell.empty { background: transparent; }
+.cell.active {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+}
+.cell.active input {
+  width: 100%; height: 100%; border: none; outline: none;
+  background: transparent; text-align: center;
+  font-family: 'Heebo', sans-serif; font-size: 1rem; font-weight: 700;
+  color: var(--text); cursor: pointer; padding: 0; caret-color: transparent;
+}
+.cell.active:focus-within {
+  background: #eff6ff;
+  border-color: var(--purple);
+  box-shadow: inset 0 0 0 2px var(--purple);
+}
+.cell.correct { background: #f0fdf4 !important; border-color: var(--green) !important; }
+.cell.correct input { color: var(--green); }
+.cell.wrong { background: #fef2f2 !important; border-color: var(--red) !important; animation: shake 0.3s ease; }
+.cell.wrong input { color: var(--red); }
+
+.cell-num {
+  position: absolute; top: 1px; right: 2px;
+  font-size: 0.48rem; font-weight: 900; color: var(--gold);
+  line-height: 1; pointer-events: none; z-index: 2;
+}
+
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)}
+}
+
+.controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+button {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.9rem;
+  padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+#btn-check { background: var(--purple); color: #fff; }
+#btn-check:hover { background: #6d28d9; transform: translateY(-1px); }
+#btn-reveal, #btn-reset { background: var(--card); color: var(--sub); border: 1.5px solid var(--border); }
+#btn-reveal:hover, #btn-reset:hover { background: var(--bg); }
+
+#feedback { font-size: 0.95rem; font-weight: 700; min-height: 22px; text-align: center; }
+#feedback.success { color: var(--green); }
+#feedback.error { color: var(--red); }
+
+#win-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,10,5,0.6); align-items: center; justify-content: center;
+}
+#win-overlay.show { display: flex; }
+.win-card {
+  background: var(--card); border: 3px solid var(--green); border-radius: 24px;
+  padding: 40px 32px; max-width: 320px; width: 90%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: popUp 0.35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popUp { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+.win-emoji { font-size: 3rem; }
+.win-title { font-size: 1.6rem; font-weight: 900; color: var(--green); }
+.win-sub { font-size: 0.9rem; color: var(--sub); }
+.btn-win {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.95rem;
+  padding: 10px 26px; border-radius: 10px; border: none;
+  background: var(--green); color: #fff; cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  :root { --cs: 30px; }
+  .cell.active input { font-size: 0.8rem; }
+  .cell-num { font-size: 0.38rem; }
+}
+</style>
+</head>
+<body>
+
+<h1>🐸 תשבץ המכות 🌿</h1>
+<div class="subtitle">מלאו בתשבץ את 10 המכות</div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="feedback"></div>
+
+<div class="controls">
+  <button id="btn-check">בדיקה ✓</button>
+  <button id="btn-reveal">גילוי 💡</button>
+  <button id="btn-reset">↺ איפוס</button>
+</div>
+
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">כל הכבוד!</div>
+    <div class="win-sub">מילאתם את כל 10 המכות!</div>
+    <button class="btn-win" onclick="document.getElementById('win-overlay').classList.remove('show')">המשך ◀</button>
+  </div>
+</div>
+
+<script>
+const ROWS = 9, COLS = 12;
+
+// Solution letters: [row, col, letter] — exact from Excel
+const LETTERS = [
+  [0,3,'צ'],
+  [1,3,'פ'],
+  [2,0,'א'],[2,3,'ר'],
+  [3,0,'ר'],[3,3,'ד'],[3,4,'ר'],[3,5,'ב'],
+  [4,0,'ב'],[4,1,'ו'],[4,2,'ר'],[4,3,'ע'],
+  [4,5,'כ'],[4,6,'ש'],[4,7,'ו'],[4,8,'ח'],
+  [5,0,'ה'],[5,5,'ו'],[5,10,'ש'],
+  [6,5,'ר'],[6,6,'ב'],[6,7,'ד'],[6,10,'ח'],
+  [7,5,'ו'],[7,7,'מ'],[7,8,'י'],[7,9,'נ'],[7,10,'י'],[7,11,'כ'],
+  [8,5,'ת'],[8,10,'נ'],
+];
+
+// Numbers at word-start cells
+// Hebrew RTL crossword: ACROSS numbers go on rightmost cell (first letter reading RTL)
+const NUMBERS = [
+  [0,3,1],   // 1↓ צפרדע
+  [2,0,2],   // 2↓ ארבה
+  [3,5,3],   // 3→ ברד + 3↓ בכורות
+  [4,8,4],   // 4→ חושך
+  [4,3,5],   // 5→ ערוב
+  [5,10,6],  // 6↓ שחין
+  [6,7,7],   // 7→ דבר + 7↓ דם
+  [7,11,8],  // 8→ כינים
+];
+
+const SOL = Array.from({length:ROWS}, () => Array(COLS).fill(null));
+LETTERS.forEach(([r,c,l]) => { SOL[r][c] = l; });
+
+const numMap = {};
+NUMBERS.forEach(([r,c,n]) => { numMap[\`\${r},\${c}\`] = n; });
+
+const userGrid = Array.from({length:ROWS}, () => Array(COLS).fill(''));
+let inputEls = {};
+
+function buildGrid() {
+  const gridEl = document.getElementById('grid');
+  gridEl.innerHTML = '';
+  inputEls = {};
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+
+      if (SOL[r][c] !== null) {
+        cell.classList.add('active');
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+
+        const num = numMap[\`\${r},\${c}\`];
+        if (num) {
+          const numEl = document.createElement('div');
+          numEl.className = 'cell-num';
+          numEl.textContent = num;
+          cell.appendChild(numEl);
+        }
+
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.maxLength = 2;
+        inp.autocomplete = 'off';
+        inp.autocorrect = 'off';
+        inp.spellcheck = false;
+        inp.value = userGrid[r][c];
+
+        inp.addEventListener('input', e => {
+          let v = e.target.value.replace(/[^א-ת]/g, '');
+          if (v.length > 1) v = v[v.length - 1];
+          inp.value = v;
+          userGrid[r][c] = v;
+          cell.classList.remove('correct', 'wrong');
+          clearFeedback();
+          if (v) advanceFocus(r, c);
+        });
+
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !inp.value) retreatFocus(r, c);
+          if (e.key === 'ArrowRight') moveFocus(r, c - 1);
+          if (e.key === 'ArrowLeft')  moveFocus(r, c + 1);
+          if (e.key === 'ArrowUp')    moveFocus(r - 1, c);
+          if (e.key === 'ArrowDown')  moveFocus(r + 1, c);
+          if (e.key === 'Enter') document.getElementById('btn-check').click();
+        });
+
+        cell.appendChild(inp);
+        inputEls[\`\${r},\${c}\`] = inp;
+      } else {
+        cell.classList.add('empty');
+      }
+
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+function moveFocus(r, c) {
+  const inp = inputEls[\`\${r},\${c}\`];
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function advanceFocus(r, c) {
+  for (let cc = c - 1; cc >= 0; cc--)
+    if (SOL[r][cc] !== null) { moveFocus(r, cc); return; }
+  for (let rr = r + 1; rr < ROWS; rr++)
+    for (let cc = COLS - 1; cc >= 0; cc--)
+      if (SOL[rr][cc] !== null) { moveFocus(rr, cc); return; }
+}
+
+function retreatFocus(r, c) {
+  for (let cc = c + 1; cc < COLS; cc++)
+    if (SOL[r][cc] !== null) { moveFocus(r, cc); return; }
+  for (let rr = r - 1; rr >= 0; rr--)
+    for (let cc = 0; cc < COLS; cc++)
+      if (SOL[rr][cc] !== null) { moveFocus(rr, cc); return; }
+}
+
+function clearFeedback() {
+  const fb = document.getElementById('feedback');
+  fb.textContent = ''; fb.className = '';
+}
+
+const REG = {'ן':'נ','ך':'כ','ם':'מ','ף':'פ','ץ':'צ'};
+function norm(ch) { return REG[ch] || ch; }
+
+function validate() {
+  const fb = document.getElementById('feedback');
+  let allFilled = true, allCorrect = true;
+
+  LETTERS.forEach(([r,c,sol]) => {
+    const cell = document.querySelector(\`.cell[data-r="\${r}"][data-c="\${c}"]\`);
+    const val = userGrid[r][c];
+    if (!val) { allFilled = false; return; }
+    const ok = norm(val) === norm(sol);
+    cell.classList.remove('correct', 'wrong');
+    cell.classList.add(ok ? 'correct' : 'wrong');
+    if (!ok) allCorrect = false;
+  });
+
+  if (!allFilled) { fb.textContent = 'עוד לא מלאו את כל התאים'; fb.className = 'error'; return; }
+  if (allCorrect) {
+    fb.textContent = '🎉 מושלם! כל המכות נכונות!';
+    fb.className = 'success';
+    setTimeout(() => { document.getElementById('win-overlay').classList.add('show'); setTimeout(()=>parent.postMessage({type:'STATION_COMPLETE'},'*'),1200); }, 600);
+  } else {
+    fb.textContent = 'יש שגיאות — התאים האדומים צריכים תיקון';
+    fb.className = 'error';
+  }
+}
+
+function reveal() {
+  LETTERS.forEach(([r,c,sol]) => {
+    userGrid[r][c] = sol;
+    const inp = inputEls[\`\${r},\${c}\`];
+    if (inp) inp.value = sol;
+    const cell = document.querySelector(\`.cell[data-r="\${r}"][data-c="\${c}"]\`);
+    if (cell) { cell.classList.remove('wrong'); cell.classList.add('correct'); }
+  });
+  clearFeedback();
+}
+
+function reset() {
+  LETTERS.forEach(([r,c]) => {
+    userGrid[r][c] = '';
+    const inp = inputEls[\`\${r},\${c}\`];
+    if (inp) inp.value = '';
+    const cell = document.querySelector(\`.cell[data-r="\${r}"][data-c="\${c}"]\`);
+    if (cell) cell.classList.remove('correct', 'wrong');
+  });
+  clearFeedback();
+}
+
+document.getElementById('btn-check').addEventListener('click', validate);
+document.getElementById('btn-reveal').addEventListener('click', reveal);
+document.getElementById('btn-reset').addEventListener('click', reset);
+
+buildGrid();
+<\/script>
+</body>
+</html>
+`; }
+function s8() { return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ארבעת הבנים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf6ec;
+  --card: #fff;
+  --border: #e0ccb0;
+  --gold: #b45309;
+  --green: #15803d;
+  --red: #dc2626;
+  --text: #2d1a0e;
+  --sub: #78716c;
+  --purple: #7c3aed;
+  --shadow: rgba(45,26,14,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+  gap: 18px;
+  color: var(--text);
+}
+
+h1 { font-size: 1.5rem; font-weight: 900; color: var(--gold); text-align: center; }
+
+.clues-box {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 2px 12px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.clues-title { font-size: 0.82rem; font-weight: 900; color: var(--gold); margin-bottom: 2px; }
+.clue { font-size: 0.85rem; color: var(--text); line-height: 1.5; display: flex; gap: 7px; }
+.clue-dot { color: var(--gold); font-weight: 900; flex-shrink: 0; }
+
+/* ── SLOTS ── */
+.slots-wrap {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slots-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sub);
+  text-align: center;
+}
+
+.slots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.slot {
+  width: 88px;
+  min-height: 70px;
+  border: 2.5px dashed var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slot.drag-over {
+  border-color: var(--purple);
+  background: #f5f0ff;
+}
+
+.slot.correct { border-color: var(--green); background: #f0fdf4; }
+.slot.wrong   { border-color: var(--red);   background: #fef2f2; animation: shake 0.35s ease; }
+
+.slot-num {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: var(--sub);
+}
+
+.slot-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--sub);
+  text-align: center;
+  padding: 0 4px;
+}
+
+.slot-card {
+  width: 80px;
+  padding: 8px 6px;
+  background: var(--purple);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.1s, opacity 0.15s;
+  line-height: 1.3;
+}
+.slot-card:active { cursor: grabbing; transform: scale(0.95); }
+
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)}
+}
+
+/* ── BANK ── */
+.bank-wrap {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bank-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sub);
+  text-align: center;
+}
+.bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  min-height: 50px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.bank.drag-over {
+  border-color: var(--purple);
+  background: #f5f0ff;
+}
+
+.bank-card {
+  padding: 10px 20px;
+  background: var(--purple);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.25);
+  line-height: 1.3;
+  text-align: center;
+}
+.bank-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(124,58,237,0.35); }
+.bank-card:active { cursor: grabbing; transform: scale(0.95); }
+.bank-card.dragging { opacity: 0.4; }
+
+/* ── CONTROLS ── */
+.controls { display: flex; gap: 10px; justify-content: center; }
+button {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.9rem;
+  padding: 10px 24px; border-radius: 99px; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+#btn-check { background: var(--purple); color: #fff; }
+#btn-check:disabled { background: #c4b49a; cursor: default; }
+#btn-check:not(:disabled):hover { background: #6d28d9; }
+#btn-reset { background: var(--card); color: var(--sub); border: 2px solid var(--border); }
+#btn-reset:hover { background: var(--bg); }
+
+#feedback { font-size: 0.95rem; font-weight: 700; min-height: 22px; text-align: center; color: var(--sub); }
+#feedback.success { color: var(--green); }
+#feedback.error   { color: var(--red); }
+
+/* ── WIN ── */
+#win-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,10,5,0.6); align-items: center; justify-content: center;
+}
+#win-overlay.show { display: flex; }
+.win-card {
+  background: var(--card); border: 3px solid var(--gold); border-radius: 24px;
+  padding: 40px 32px; max-width: 320px; width: 90%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  animation: popUp 0.35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popUp { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+.win-emoji { font-size: 3rem; }
+.win-title { font-size: 1.6rem; font-weight: 900; color: var(--gold); }
+.win-sub   { font-size: 0.9rem; color: var(--sub); }
+.btn-win {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.95rem;
+  padding: 10px 28px; border-radius: 99px; border: none;
+  background: var(--gold); color: #fff; cursor: pointer;
+}
+
+@media (max-width: 400px) {
+  .slot { width: 74px; }
+  .slot-card, .bank-card { font-size: 0.82rem; }
+}
+</style>
+</head>
+<body>
+
+<h1>👦 ארבעת הבנים</h1>
+
+<div class="clues-box">
+  <div class="clues-title">סדרו את הבנים לפי הרמזים:</div>
+  <div class="clue"><span class="clue-dot">•</span><span>החכם עומד בקצה.</span></div>
+  <div class="clue"><span class="clue-dot">•</span><span>הרשע אינו עומד ליד החכם.</span></div>
+  <div class="clue"><span class="clue-dot">•</span><span>שאינו יודע לשאול עומד בין התם לבין הרשע.</span></div>
+  <div class="clue"><span class="clue-dot">•</span><span>התם עומד משמאל לשאינו יודע לשאול.</span></div>
+</div>
+
+<div class="slots-wrap">
+  <div class="slots-label">← מקום 4 (שמאל) · · · מקום 1 (ימין) →</div>
+  <div class="slots" id="slots">
+    <div class="slot" data-slot="4" id="slot-4"><span class="slot-num">4</span><span class="slot-label">שמאל</span></div>
+    <div class="slot" data-slot="3" id="slot-3"><span class="slot-num">3</span></div>
+    <div class="slot" data-slot="2" id="slot-2"><span class="slot-num">2</span></div>
+    <div class="slot" data-slot="1" id="slot-1"><span class="slot-num">1</span><span class="slot-label">ימין</span></div>
+  </div>
+</div>
+
+<div class="bank-wrap">
+  <div class="bank-label">בנק המילים — גררו לתוך המקום המתאים</div>
+  <div class="bank" id="bank"></div>
+</div>
+
+<div id="feedback"></div>
+
+<div class="controls">
+  <button id="btn-check" disabled>בדיקה ✓</button>
+  <button id="btn-reset">↺ איפוס</button>
+</div>
+
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">כל הכבוד!</div>
+    <div class="win-sub">סידרתם נכון את ארבעת הבנים!</div>
+    <button class="btn-win" onclick="document.getElementById('win-overlay').classList.remove('show')">המשך ◀</button>
+  </div>
+</div>
+
+<script>
+const SONS = ['חכם', 'רשע', 'תם', 'שאינו יודע\\nלשאול'];
+// Correct order: slot 1=חכם, 2=תם, 3=שאינו יודע לשאול, 4=רשע
+const ANSWER = { 1:'חכם', 2:'תם', 3:'שאינו יודע\\nלשאול', 4:'רשע' };
+
+let slotContents = { 1: null, 2: null, 3: null, 4: null };
+let draggedItem = null;
+let dragSource = null; // 'bank' or slot number
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildBank() {
+  const bank = document.getElementById('bank');
+  bank.innerHTML = '';
+  const shuffled = shuffle(SONS);
+  shuffled.forEach(son => {
+    if (Object.values(slotContents).includes(son)) return;
+    const card = createCard(son, 'bank');
+    bank.appendChild(card);
+  });
+}
+
+function createCard(son, source) {
+  const card = document.createElement('div');
+  card.className = source === 'bank' ? 'bank-card' : 'slot-card';
+  card.textContent = son;
+  card.dataset.son = son;
+  card.draggable = true;
+
+  card.addEventListener('dragstart', e => {
+    draggedItem = son;
+    dragSource = source === 'bank' ? 'bank' : parseInt(source);
+    setTimeout(() => card.classList.add('dragging'), 0);
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+  });
+
+  // Touch support
+  card.addEventListener('touchstart', onTouchStart, { passive: true });
+  card.addEventListener('touchmove', onTouchMove, { passive: false });
+  card.addEventListener('touchend', onTouchEnd);
+
+  return card;
+}
+
+// ── DRAG & DROP ──
+function setupSlots() {
+  document.querySelectorAll('.slot').forEach(slot => {
+    const num = parseInt(slot.dataset.slot);
+    slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', e => {
+      e.preventDefault();
+      slot.classList.remove('drag-over');
+      dropOnSlot(num);
+    });
+  });
+
+  const bank = document.getElementById('bank');
+  bank.addEventListener('dragover', e => { e.preventDefault(); bank.classList.add('drag-over'); });
+  bank.addEventListener('dragleave', () => bank.classList.remove('drag-over'));
+  bank.addEventListener('drop', e => {
+    e.preventDefault();
+    bank.classList.remove('drag-over');
+    dropOnBank();
+  });
+}
+
+function dropOnSlot(targetSlot) {
+  if (draggedItem === null) return;
+
+  const previousOccupant = slotContents[targetSlot];
+
+  // Remove dragged item from source
+  if (dragSource === 'bank') {
+    // Nothing to clear in bank model
+  } else {
+    slotContents[dragSource] = null;
+  }
+
+  // If slot was occupied, send previous occupant back to bank
+  if (previousOccupant !== null) {
+    if (dragSource !== 'bank' && previousOccupant === slotContents[dragSource]) {
+      // already cleared
+    }
+    // previousOccupant goes to bank (unless it came from bank swap)
+    if (dragSource !== 'bank') {
+      // swap: previous occupant goes to source slot
+      slotContents[dragSource] = previousOccupant;
+    }
+    // if dragging from bank: previous occupant returns to bank (handled by render)
+  }
+
+  slotContents[targetSlot] = draggedItem;
+  draggedItem = null;
+  dragSource = null;
+  render();
+  clearFeedback();
+}
+
+function dropOnBank() {
+  if (draggedItem === null || dragSource === 'bank') return;
+  slotContents[dragSource] = null;
+  draggedItem = null;
+  dragSource = null;
+  render();
+  clearFeedback();
+}
+
+// ── TOUCH SUPPORT ──
+let touchCard = null, touchClone = null, touchSon = null, touchSrc = null;
+
+function onTouchStart(e) {
+  touchCard = e.currentTarget;
+  touchSon = touchCard.dataset.son;
+  touchSrc = touchCard.closest('.slot') ? parseInt(touchCard.closest('.slot').dataset.slot) : 'bank';
+
+  const rect = touchCard.getBoundingClientRect();
+  touchClone = touchCard.cloneNode(true);
+  touchClone.style.cssText = \`
+    position:fixed; z-index:1000; pointer-events:none; opacity:0.85;
+    width:\${rect.width}px; top:\${rect.top}px; left:\${rect.left}px;
+    transition:none;
+  \`;
+  document.body.appendChild(touchClone);
+}
+
+function onTouchMove(e) {
+  e.preventDefault();
+  if (!touchClone) return;
+  const t = e.touches[0];
+  touchClone.style.top = (t.clientY - 30) + 'px';
+  touchClone.style.left = (t.clientX - 40) + 'px';
+}
+
+function onTouchEnd(e) {
+  if (!touchClone) return;
+  const t = e.changedTouches[0];
+  touchClone.remove();
+  touchClone = null;
+
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  const targetSlot = el?.closest('.slot');
+  const targetBank = el?.closest('.bank');
+
+  draggedItem = touchSon;
+  dragSource = touchSrc;
+
+  if (targetSlot) {
+    dropOnSlot(parseInt(targetSlot.dataset.slot));
+  } else if (targetBank) {
+    dropOnBank();
+  }
+
+  touchCard = null;
+  touchSon = null;
+  touchSrc = null;
+}
+
+// ── RENDER ──
+function render() {
+  // Render slots
+  for (let i = 1; i <= 4; i++) {
+    const slot = document.getElementById(\`slot-\${i}\`);
+    // Keep num and label spans
+    const numEl = slot.querySelector('.slot-num');
+    const labelEl = slot.querySelector('.slot-label');
+    slot.innerHTML = '';
+    if (numEl) slot.appendChild(numEl);
+    if (labelEl) slot.appendChild(labelEl);
+    slot.classList.remove('correct', 'wrong');
+
+    if (slotContents[i]) {
+      const card = createCard(slotContents[i], i);
+      slot.appendChild(card);
+    }
+  }
+
+  // Render bank
+  buildBank();
+
+  // Enable check if all slots filled
+  const allFilled = Object.values(slotContents).every(v => v !== null);
+  document.getElementById('btn-check').disabled = !allFilled;
+}
+
+function validate() {
+  let allCorrect = true;
+  for (let i = 1; i <= 4; i++) {
+    const slot = document.getElementById(\`slot-\${i}\`);
+    const val = slotContents[i];
+    const correct = ANSWER[i];
+    // normalize newlines for comparison
+    const norm = s => s?.replace(/\\s+/g, '') || '';
+    const ok = norm(val) === norm(correct);
+    slot.classList.remove('correct', 'wrong');
+    slot.classList.add(ok ? 'correct' : 'wrong');
+    if (!ok) allCorrect = false;
+  }
+
+  if (allCorrect) {
+    document.getElementById('feedback').textContent = '🎉 נכון! סידרתם מצוין!';
+    document.getElementById('feedback').className = 'success';
+    setTimeout(() => { document.getElementById('win-overlay').classList.add('show'); setTimeout(()=>parent.postMessage({type:'STATION_COMPLETE'},'*'),1200); }, 600);
+  } else {
+    document.getElementById('feedback').textContent = 'לא מדויק — התאים האדומים במקום הלא נכון';
+    document.getElementById('feedback').className = 'error';
+  }
+}
+
+function clearFeedback() {
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = '';
+}
+
+function reset() {
+  slotContents = { 1: null, 2: null, 3: null, 4: null };
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('correct','wrong'));
+  document.getElementById('win-overlay').classList.remove('show');
+  clearFeedback();
+  render();
+}
+
+document.getElementById('btn-check').addEventListener('click', validate);
+document.getElementById('btn-reset').addEventListener('click', reset);
+
+setupSlots();
+render();
+<\/script>
+</body>
+</html>
+`; }
+function s9() { return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Heebo',sans-serif;background:#fdf6ec;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 40px;gap:20px}#image-wrap{width:100%;max-width:480px;border-radius:18px;overflow:hidden;border:3px solid #e0d8cc;box-shadow:0 6px 28px rgba(0,0,0,.12)}#image-wrap img{width:100%;height:auto;display:block}#answer-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:340px}#answer-input{font-family:'Heebo',sans-serif;font-size:1.3rem;font-weight:700;width:100%;height:58px;border:2.5px solid #d4b896;border-radius:14px;padding:0 18px;outline:none;text-align:center;background:#fff;color:#2d1a0e;transition:border-color .15s}#answer-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}#answer-input.correct{border-color:#16a34a;background:#f0fdf4;color:#15803d}#answer-input.wrong{border-color:#dc2626;background:#fef2f2;animation:shake .28s ease}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}#btn-check{font-family:'Heebo',sans-serif;font-weight:700;font-size:1.05rem;padding:13px 36px;border-radius:12px;border:none;background:#7c3aed;color:#fff;cursor:pointer;width:100%;transition:background .15s}#btn-check:hover{background:#6d28d9}#feedback{font-size:1rem;font-weight:700;min-height:24px;text-align:center;color:#78716c}#feedback.success{color:#16a34a}#feedback.error{color:#dc2626}#btn-reset{font-family:'Heebo',sans-serif;font-weight:700;font-size:.85rem;padding:8px 22px;border-radius:10px;border:2px solid #d4b896;background:#fff;color:#78716c;cursor:pointer}</style></head><body><div id="image-wrap"><img src="pic4.jpg" alt="חידה"></div><div id="answer-wrap"><input type="text" id="answer-input" placeholder="כתבו את התשובה" autocomplete="off" autocorrect="off" spellcheck="false"><button id="btn-check">בדיקה ✓</button><div id="feedback"></div><button id="btn-reset">↺ נסו שוב</button></div><script>const ANSWERS=['הא לחמא עניא','הא לחמא'];const inp=document.getElementById('answer-input'),fb=document.getElementById('feedback');function normalize(s){return s.trim().replace(/\\s+/g,' ')}inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});inp.addEventListener('input',()=>{inp.classList.remove('correct','wrong');fb.textContent='';fb.className=''});function check(){const val=normalize(inp.value);if(!val){fb.textContent='כתבו תשובה';fb.className='error';return}if(ANSWERS.some(a=>normalize(a)===val)){inp.classList.add('correct');fb.textContent='🎉 נכון! כל הכבוד!';fb.className='success';setTimeout(()=>{parent.postMessage({type:'STATION_COMPLETE'},'*')},900)}else{inp.classList.add('wrong');setTimeout(()=>inp.classList.remove('wrong'),320);fb.textContent='לא מדויק — נסו שוב';fb.className='error';inp.value='';inp.focus()}}document.getElementById('btn-check').addEventListener('click',check);document.getElementById('btn-reset').addEventListener('click',()=>{inp.value='';inp.classList.remove('correct','wrong');fb.textContent='';fb.className='';inp.focus()});inp.focus();<\\/script></body></html>`; }
+function s10() { return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חידת פסח — פירמידה וצפרדע</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4f8;
+  --card: #ffffff;
+  --border: #dde3ec;
+  --shadow: rgba(60,80,120,0.10);
+  --gold: #b45309;
+  --green: #15803d;
+  --red: #dc2626;
+  --text: #1e293b;
+  --sub: #64748b;
+  --clue-bg: #f8fafc;
+  --cell-hover: #e8f0fe;
+  --pyramid-bg: #fde68a;
+  --pyramid-border: #f59e0b;
+  --frog-bg: #bbf7d0;
+  --frog-border: #22c55e;
+  --fixed-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 40px;
+  gap: 20px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--sub);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 380px;
+}
+
+.rules {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 18px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 2px 10px var(--shadow);
+}
+
+.rule {
+  font-size: 0.82rem;
+  color: var(--text);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.rule-icon { flex-shrink: 0; font-size: 1rem; }
+
+/* ── GRID WRAPPER ── */
+.grid-container {
+  position: relative;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 32px var(--shadow);
+  border: 1.5px solid var(--border);
+}
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 72px);
+  grid-template-rows: repeat(4, 72px);
+  gap: 0;
+  position: relative;
+}
+
+/* ── CELLS ── */
+.cell {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  border: 2px solid var(--border);
+  background: var(--clue-bg);
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.cell:hover:not(.fixed) {
+  background: var(--cell-hover);
+}
+
+/* rounded corners for outer cells */
+.cell[data-r="0"][data-c="0"] { border-radius: 10px 0 0 0; }
+.cell[data-r="0"][data-c="3"] { border-radius: 0 10px 0 0; }
+.cell[data-r="3"][data-c="0"] { border-radius: 0 0 0 10px; }
+.cell[data-r="3"][data-c="3"] { border-radius: 0 0 10px 0; }
+
+/* collapse borders */
+.cell { margin: -1px 0 0 -1px; }
+.grid { padding: 1px; }
+
+.cell.fixed {
+  cursor: default;
+  background: #f1f5f9;
+}
+
+/* ── SYMBOLS ── */
+.symbol {
+  font-size: 2rem;
+  line-height: 1;
+  transition: transform 0.12s;
+}
+
+.cell:not(.fixed):active .symbol {
+  transform: scale(0.85);
+}
+
+.cell.pyramid { background: #fffbeb; }
+.cell.frog    { background: #f0fdf4; }
+
+/* ── CLUE BADGES ── */
+.clue {
+  position: absolute;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #475569;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 99px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 1px 4px var(--shadow);
+  pointer-events: none;
+}
+
+/* ── FEEDBACK ── */
+#feedback {
+  font-size: 1rem;
+  font-weight: 700;
+  min-height: 24px;
+  text-align: center;
+  transition: color 0.2s;
+  color: var(--sub);
+}
+#feedback.success { color: var(--green); font-size: 1.1rem; }
+#feedback.error   { color: var(--red); }
+
+/* ── BUTTONS ── */
+.controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+button {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+#btn-check {
+  background: #1e3a5f;
+  color: #fff;
+}
+#btn-check:hover { background: #162d4a; transform: translateY(-1px); }
+
+#btn-reset {
+  background: var(--card);
+  color: var(--sub);
+  border: 1.5px solid var(--border);
+}
+#btn-reset:hover { background: var(--bg); }
+
+/* ── PROGRESS ── */
+.progress-wrap {
+  font-size: 0.82rem;
+  color: var(--sub);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ── WIN OVERLAY ── */
+#win-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,23,42,0.6);
+  align-items: center; justify-content: center;
+}
+#win-overlay.show { display: flex; }
+.win-card {
+  background: var(--card);
+  border: 3px solid #22c55e;
+  border-radius: 24px;
+  padding: 40px 32px;
+  max-width: 320px; width: 90%;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: popUp 0.3s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popUp {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.win-emoji { font-size: 3.5rem; }
+.win-title { font-size: 1.6rem; font-weight: 900; color: var(--green); }
+.win-sub   { font-size: 0.9rem; color: var(--sub); }
+.btn-win {
+  font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 0.95rem;
+  padding: 11px 28px; border-radius: 10px; border: none;
+  background: var(--green); color: #fff; cursor: pointer;
+  margin-top: 4px;
+}
+.btn-win:hover { background: #166534; }
+
+@media (max-width: 380px) {
+  .grid { grid-template-columns: repeat(4, 62px); grid-template-rows: repeat(4, 62px); }
+  .cell { width: 62px; height: 62px; }
+  .symbol { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+
+<h1>🔺 חידת פירמידה וצפרדע 🐸</h1>
+
+<div class="rules">
+  <div class="rule"><span class="rule-icon">1️⃣</span><span>לחיצה אחת = פירמידה 🔺, לחיצה נוספת = צפרדע 🐸, לחיצה שלישית = ריק</span></div>
+  <div class="rule"><span class="rule-icon">2️⃣</span><span>בכל שורה ועמודה: בדיוק 2 פירמידות ו-2 צפרדעים</span></div>
+  <div class="rule"><span class="rule-icon">3️⃣</span><span>לא יותר מ-2 סמלים זהים ברצף בשורה או עמודה</span></div>
+  <div class="rule"><span class="rule-icon">=</span><span>סימן <strong>=</strong> בין שני תאים — חייבים להיות זהים</span></div>
+  <div class="rule"><span class="rule-icon">✕</span><span>סימן <strong>✕</strong> בין שני תאים — חייבים להיות שונים</span></div>
+</div>
+
+<div class="grid-container">
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="feedback"></div>
+
+<div class="controls">
+  <button id="btn-check">בדיקה ✓</button>
+  <button id="btn-reset">↺ איפוס</button>
+</div>
+
+<div class="progress-wrap" id="progress">מלאו את כל התאים ולחצו בדיקה</div>
+
+<!-- WIN -->
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">כל הכבוד!</div>
+    <div class="win-sub">פתרתם את חידת הפירמידה והצפרדע!</div>
+    <button class="btn-win" onclick="document.getElementById('win-overlay').classList.remove('show')">המשך ◀</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// PUZZLE DATA
+// P = pyramid 🔺, F = frog 🐸, 0 = empty
+// ═══════════════════════════════════════
+
+// Solution (4×4)
+const SOLUTION = [
+  ['F','P','F','P'],
+  ['F','P','F','P'],
+  ['P','F','P','F'],
+  ['P','F','P','F'],
+];
+
+// Fixed cells: [row, col, value]
+const FIXED = [
+  [0, 2, 'P'],
+  [1, 2, 'P'],
+  [3, 1, 'P'],
+];
+
+// Clues between adjacent cells
+// type: 'eq' (=) or 'neq' (×)
+// dir: 'v' (vertical, between [r,c] and [r+1,c]) or 'h' (horizontal, between [r,c] and [r,c+1])
+const CLUES = [
+  { r:0, c:3, dir:'v', type:'eq'  },  // = between (0,3)-(1,3)
+  { r:1, c:3, dir:'v', type:'neq' },  // × between (1,3)-(2,3)
+  { r:3, c:0, dir:'h', type:'neq' },  // × between (3,0)-(3,1)
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let board = Array.from({length:4}, () => Array(4).fill(''));
+const fixedSet = new Set(FIXED.map(([r,c]) => \`\${r},\${c}\`));
+
+// Pre-fill fixed cells
+FIXED.forEach(([r,c,v]) => { board[r][c] = v; });
+
+// ═══════════════════════════════════════
+// BUILD GRID
+// ═══════════════════════════════════════
+const SYMBOLS = { P: '🔺', F: '🐸', '': '' };
+const CYCLE   = { '': 'P', P: 'F', F: '' };
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      const key = \`\${r},\${c}\`;
+      if (fixedSet.has(key)) {
+        cell.classList.add('fixed');
+      }
+
+      const sym = document.createElement('span');
+      sym.className = 'symbol';
+      cell.appendChild(sym);
+
+      cell.addEventListener('click', () => {
+        if (fixedSet.has(\`\${r},\${c}\`)) return;
+        board[r][c] = CYCLE[board[r][c]];
+        renderCell(r, c);
+        clearFeedback();
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  // Place clue badges
+  CLUES.forEach(clue => {
+    const badge = document.createElement('div');
+    badge.className = 'clue';
+    badge.textContent = clue.type === 'eq' ? '=' : '✕';
+
+    const CELL_SIZE = 72;
+    const GAP = 0;
+
+    if (clue.dir === 'v') {
+      // vertical clue: between row r and r+1, at column c
+      badge.style.left = \`\${clue.c * (CELL_SIZE + GAP) + CELL_SIZE/2 - 11 + 1}px\`;
+      badge.style.top  = \`\${(clue.r + 1) * (CELL_SIZE + GAP) - 11 + 1}px\`;
+    } else {
+      // horizontal clue: between col c and c+1, at row r
+      badge.style.left = \`\${(clue.c + 1) * (CELL_SIZE + GAP) - 11 + 1}px\`;
+      badge.style.top  = \`\${clue.r * (CELL_SIZE + GAP) + CELL_SIZE/2 - 11 + 1}px\`;
+    }
+
+    document.getElementById('grid').appendChild(badge);
+  });
+
+  renderAll();
+}
+
+function renderCell(r, c) {
+  const cell = document.querySelector(\`.cell[data-r="\${r}"][data-c="\${c}"]\`);
+  if (!cell) return;
+  const v = board[r][c];
+  cell.querySelector('.symbol').textContent = SYMBOLS[v];
+  cell.classList.remove('pyramid', 'frog');
+  if (v === 'P') cell.classList.add('pyramid');
+  if (v === 'F') cell.classList.add('frog');
+}
+
+function renderAll() {
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++)
+      renderCell(r, c);
+  updateProgress();
+}
+
+function updateProgress() {
+  const filled = board.flat().filter(v => v !== '').length;
+  const total  = 16;
+  document.getElementById('progress').textContent =
+    filled === total ? 'הכל מלא — לחצו בדיקה!' : \`מלאו \${filled} מתוך \${total} תאים\`;
+}
+
+function clearFeedback() {
+  const fb = document.getElementById('feedback');
+  fb.textContent = '';
+  fb.className = '';
+  updateProgress();
+}
+
+// ═══════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════
+function validate() {
+  const fb = document.getElementById('feedback');
+
+  // 1. All filled
+  if (board.flat().some(v => v === '')) {
+    fb.textContent = 'עוד לא מלאו את כל התאים';
+    fb.className = 'error';
+    return;
+  }
+
+  // 2. Check rows and cols: exactly 2 of each, no 3 in a row
+  for (let i = 0; i < 4; i++) {
+    const row = board[i];
+    const col = [0,1,2,3].map(j => board[j][i]);
+
+    if (!checkLine(row) || !checkLine(col)) {
+      fb.textContent = 'יש שגיאה בשורה או עמודה — בדקו שוב!';
+      fb.className = 'error';
+      return;
+    }
+  }
+
+  // 3. Check clues
+  for (const clue of CLUES) {
+    let a, b;
+    if (clue.dir === 'v') {
+      a = board[clue.r][clue.c];
+      b = board[clue.r+1][clue.c];
+    } else {
+      a = board[clue.r][clue.c];
+      b = board[clue.r][clue.c+1];
+    }
+    const ok = clue.type === 'eq' ? a === b : a !== b;
+    if (!ok) {
+      fb.textContent = 'שגיאה ליד אחד הרמזים (= או ✕)';
+      fb.className = 'error';
+      return;
+    }
+  }
+
+  // WIN
+  fb.textContent = '🎉 מושלם! פתרתם את החידה!';
+  fb.className = 'success';
+  setTimeout(() => { document.getElementById('win-overlay').classList.add('show'); setTimeout(()=>parent.postMessage({type:'STATION_COMPLETE'},'*'),1200); }, 600);
+}
+
+function checkLine(line) {
+  const pCount = line.filter(v => v === 'P').length;
+  const fCount = line.filter(v => v === 'F').length;
+  if (pCount !== 2 || fCount !== 2) return false;
+  // No 3 in a row
+  for (let i = 0; i <= line.length - 3; i++) {
+    if (line[i] === line[i+1] && line[i+1] === line[i+2]) return false;
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════
+function resetPuzzle() {
+  board = Array.from({length:4}, () => Array(4).fill(''));
+  FIXED.forEach(([r,c,v]) => { board[r][c] = v; });
+  renderAll();
+  clearFeedback();
+  document.getElementById('feedback').textContent = '';
+}
+
+document.getElementById('btn-check').addEventListener('click', validate);
+document.getElementById('btn-reset').addEventListener('click', resetPuzzle);
+
+buildGrid();
+<\/script>
+</body>
+</html>
+`; }
+</script>
+</body>
+</html>
